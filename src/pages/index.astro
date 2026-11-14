@@ -1,0 +1,157 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+import Tile from '../components/Tile.astro';
+import { photo } from '../data/photos';
+import { site } from '../data/site';
+import { services, serviceBySlug } from '../data/services';
+import { gallery } from '../data/gallery';
+
+const posts = (await getCollection('blog')).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
+// Hai khối lớn: dịch vụ nêu bật kèm ảnh riêng. Dịch vụ bị xóa khỏi dữ liệu thì khối tự ẩn.
+const featurePhotos: Record<string, string> = { refret: '09657', repaint: '09616' };
+const features = Object.keys(featurePhotos)
+  .filter((slug) => serviceBySlug[slug])
+  .map((slug) => ({ ...serviceBySlug[slug], photo: featurePhotos[slug] }));
+const promo = serviceBySlug.setup?.callout;
+const hero = await photo(site.heroPhoto);
+---
+
+<Layout>
+  <!-- HERO tràn viền, chữ ở góc dưới trái -->
+  <section class="relative isolate flex min-h-[78vh] items-end overflow-hidden bg-char">
+    <Image
+      {...hero.props}
+      alt="Cây Stratocaster đỏ rượu dựng cạnh sofa vàng"
+      widths={[800, 1280, 1920, 2400]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+      class="absolute inset-0 -z-20 size-full object-cover object-right"
+    />
+    <!-- Lớp phủ tối để chữ đọc được trên ảnh -->
+    <div class="absolute inset-0 -z-10 bg-gradient-to-tr from-black/75 via-black/25 to-transparent"></div>
+
+    <div class="mx-auto w-full max-w-7xl px-5 pb-12 text-ivory md:px-8 md:pb-16">
+      <p class="eyebrow !text-gold">Sửa chữa · Setup · Bảo dưỡng</p>
+      <h1 class="mt-4 max-w-2xl text-5xl md:text-7xl">Đàn rè, phô, ù? Mang đến <em class="text-gold">{site.name}</em>.</h1>
+      <p class="mt-5 max-w-md text-ivory/80">{site.tagline}</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/dich-vu/" class="btn">Xem dịch vụ</a>
+        <a href="/gallery/" class="btn btn-ghost !text-ivory !shadow-[inset_0_0_0_1px_var(--color-ivory)]">Xem ca đã làm</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- DỊCH VỤ: hàng ô ảnh, chú thích bên dưới, cuộn ngang trên điện thoại -->
+  <section class="mx-auto max-w-7xl px-5 pt-20 md:px-8">
+    <div class="flex items-end justify-between gap-4">
+      <h2 class="text-3xl md:text-4xl">Dịch vụ</h2>
+      <a href="/dich-vu/" class="link">Bảng giá đầy đủ</a>
+    </div>
+    <div class="strip mt-8 grid snap-x grid-flow-col auto-cols-[62%] gap-4 overflow-x-auto sm:auto-cols-[38%] md:grid-flow-row md:auto-cols-auto md:grid-cols-3 md:overflow-visible lg:grid-cols-6">
+      {
+        services.map((s, i) => (
+          <a href={`/dich-vu/${s.slug}/`} class="group snap-start">
+            <Tile item={{ ratio: '3/4', photo: s.photo, title: s.name }} caption={false} sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 62vw" />
+            <h3 class="mt-3 text-base font-normal group-hover:text-gold-deep">{s.name}</h3>
+            <p class="mt-1 text-sm text-mute">Từ {s.price}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- HAI KHỐI LỚN -->
+  <section class="mx-auto grid max-w-7xl gap-5 px-5 pt-24 md:grid-cols-2 md:px-8">
+    {
+      features.map((s, i) => (
+        <a href={`/dich-vu/${s.slug}/`} class="reveal group block">
+          <Tile item={{ ratio: '4/5', photo: s.photo, title: s.name }} caption={false} sizes="(min-width: 768px) 50vw, 100vw" />
+          <p class="eyebrow mt-6">Từ {s.price}</p>
+          <h2 class="mt-2 text-3xl">{s.name}</h2>
+          <p class="mt-2 max-w-md text-sm text-mute">{s.short}</p>
+          <span class="link mt-4 inline-block">Xem dịch vụ</span>
+        </a>
+      ))
+    }
+  </section>
+
+  <!-- ƯU ĐÃI: ảnh một bên, chữ một bên. Lấy từ khối nổi bật của dịch vụ setup; không có thì ẩn. -->
+  {promo && (
+  <section class="mx-auto grid max-w-7xl items-center gap-10 px-5 pt-24 md:grid-cols-2 md:gap-16 md:px-8">
+    <div class="reveal group"><Tile item={{ ratio: '4/3', photo: '09656', title: 'Đầu cần đàn và bộ khóa trên nền lót case' }} caption={false} sizes="(min-width: 768px) 50vw, 100vw" /></div>
+    <div class="reveal">
+      <p class="eyebrow">{promo.label}</p>
+      <h2 class="mt-3 text-3xl md:text-4xl">{promo.title}</h2>
+      <p class="mt-4 text-mute">{promo.text}</p>
+      <dl class="mt-6 max-w-md text-sm">
+        {
+          promo.rows?.map(([k, v]) => (
+            <div class="flex justify-between gap-4 border-t border-line py-3">
+              <dt>{k}</dt>
+              <dd class="font-medium whitespace-nowrap text-gold-deep">{v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <a href="/dich-vu/#setup" class="btn mt-6">Xem giá thay dây & setup</a>
+    </div>
+  </section>
+  )}
+
+  <!-- DẢI NỀN: hỏi AI hoặc Zalo -->
+  <section class="mt-24 bg-panel">
+    <div class="reveal mx-auto max-w-2xl px-5 py-20 text-center">
+      <p class="eyebrow">Tư vấn</p>
+      <h2 class="mt-3 text-3xl md:text-5xl">Chưa chắc đàn bị gì?</h2>
+      <p class="mt-4 text-mute">
+        Hỏi Torigo agent để biết nhanh dịch vụ nào phù hợp, hoặc gửi ảnh đàn qua Zalo để thợ xem trực tiếp.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <button class="btn" data-ask="Đàn mình đang bị ">Hỏi Torigo agent</button>
+        <a href={site.zalo} target="_blank" rel="noopener" class="btn btn-ghost">Chat Zalo với thợ</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY: dải cuộn ngang -->
+  <section class="mx-auto max-w-7xl px-5 pt-24 md:px-8">
+    <div class="flex items-end justify-between gap-4">
+      <h2 class="text-3xl md:text-4xl">Ca đã làm</h2>
+      <a href="/gallery/" class="link">Xem gallery</a>
+    </div>
+    <div class="strip mt-8 flex snap-x gap-4 overflow-x-auto">
+      {
+        gallery.slice(0, 8).map((item, i) => (
+          <a href={`/gallery/?loc=${item.service}`} class="group w-[70%] shrink-0 snap-start sm:w-[38%] lg:w-[23.5%]">
+            <Tile item={{ ...item, ratio: '4/5' }} sizes="(min-width: 1024px) 24vw, (min-width: 640px) 38vw, 70vw" />
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- BLOG -->
+  <section class="mx-auto max-w-7xl px-5 pt-24 md:px-8">
+    <div class="flex items-end justify-between gap-4">
+      <h2 class="text-3xl md:text-4xl">Kiến thức</h2>
+      <a href="/blog/" class="link">Tất cả bài viết</a>
+    </div>
+    <div class="mt-8 grid gap-x-5 gap-y-10 md:grid-cols-3">
+      {
+        posts.map((p, i) => (
+          <a href={`/blog/${p.id}/`} class="reveal group block">
+            <Tile item={{ ratio: '3/2', photo: p.data.cover, title: p.data.title }} caption={false} sizes="(min-width: 768px) 33vw, 100vw" />
+            <time class="mt-5 block text-xs text-mute">{p.data.date.toLocaleDateString('vi-VN')}</time>
+            <h3 class="mt-2 text-xl group-hover:text-gold-deep">{p.data.title}</h3>
+            <p class="mt-2 text-sm text-mute">{p.data.description}</p>
+            <span class="link mt-4 inline-block">Đọc bài</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</Layout>
+

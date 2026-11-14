@@ -1,0 +1,186 @@
+{
+  "services": [
+    {
+      "slug": "setup",
+      "photo": "/src/assets/photos/09595.jpg",
+      "name": "Thay dây & Setup",
+      "short": "Thay dây mới và cân chỉnh action, intonation theo từng loại ngựa đàn.",
+      "desc": "Thay dây mới và cân chỉnh lại đàn. Giá tính theo loại ngựa đàn, vì ngựa nhún hai chiều, Evertune và Bigsby mất nhiều công hơn. Thay dây và setup được tính riêng, bạn có thể chọn một trong hai hoặc cả hai.",
+      "price": "50.000 đ",
+      "cols": [
+        "Loại ngựa đàn",
+        "Thay dây",
+        "Setup"
+      ],
+      "rows": [
+        {
+          "cells": [
+            "Floating Bridge / Fixed / Nhún 1 chiều",
+            "50.000",
+            "50.000"
+          ]
+        },
+        {
+          "cells": [
+            "Nhún 2 chiều / Evertune / Bigsby",
+            "100.000",
+            "100.000"
+          ]
+        }
+      ],
+      "callout": {
+        "label": "Ưu đãi dây đàn",
+        "title": "Mua dây tại shop, thay dây miễn phí!",
+        "text": "Áp dụng khi mua dây Olympia Artisan hoặc Elixir tại shop.",
+        "rows": [
+          {
+            "cells": [
+              "Floating / Fixed / Nhún 1 chiều",
+              "Miễn phí"
+            ]
+          },
+          {
+            "cells": [
+              "Nhún 2 chiều / Evertune / Bigsby",
+              "Giảm 50.000"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "slug": "ve-sinh",
+      "photo": "/src/assets/photos/09646.jpg",
+      "name": "Vệ sinh",
+      "short": "Làm sạch đàn theo gói cơ bản hoặc chuyên sâu.",
+      "desc": "Vệ sinh đàn theo hai mức: gói cơ bản cho đàn dùng thường xuyên, gói chuyên sâu cho đàn lâu ngày chưa được chăm sóc. Giá gói chuyên sâu tùy tình trạng đàn.",
+      "price": "100.000 đ",
+      "rows": [
+        {
+          "cells": [
+            "Cơ bản",
+            "100.000"
+          ]
+        },
+        {
+          "cells": [
+            "Chuyên sâu",
+            "200.000 – 300.000"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "nut",
+      "photo": "/src/assets/photos/09644.jpg",
+      "name": "Thay nut",
+      "short": "Thay lược đàn bằng xương hoặc TUSQ.",
+      "desc": "Thay lược đàn khi lược mòn, nứt hoặc rãnh dây quá sâu gây rè dây buông. Có lược xương và TUSQ; giá TUSQ nut báo theo từng cây đàn.",
+      "price": "150.000 đ",
+      "rows": [
+        {
+          "cells": [
+            "Lược xương",
+            "150.000"
+          ]
+        },
+        {
+          "cells": [
+            "TUSQ nut",
+            "Liên hệ"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "dien",
+      "photo": "/src/assets/photos/09630.jpg",
+      "name": "Điện & linh kiện",
+      "short": "Thay pot, switch, jack hoặc làm lại toàn bộ mạch.",
+      "desc": "Thay pot, switch, jack hỏng hoặc đi lại toàn bộ mạch, theo sơ đồ cơ bản hoặc theo yêu cầu riêng của bạn. Giá là tiền công, chưa bao gồm linh kiện.",
+      "price": "100.000 đ",
+      "rows": [
+        {
+          "cells": [
+            "Thay pot, switch, jack",
+            "100.000"
+          ]
+        },
+        {
+          "cells": [
+            "Làm toàn mạch cơ bản",
+            "200.000"
+          ]
+        },
+        {
+          "cells": [
+            "Làm toàn mạch theo yêu cầu",
+            "250.000 – 400.000"
+          ]
+        }
+      ],
+      "notes": [
+        "Chưa bao gồm linh kiện."
+      ]
+    },
+    {
+      "slug": "refret",
+      "photo": "/src/assets/photos/09631.jpg",
+      "name": "Refret",
+      "short": "Thay toàn bộ phím, nickel Sintoms hoặc stainless Schaller.",
+      "desc": "Thay toàn bộ phím khi phím đã mòn. Bạn chọn phím nickel của Sintoms hoặc phím stainless của Schaller. Cần đàn maple có phụ thu.",
+      "price": "1.800.000 đ",
+      "rows": [
+        {
+          "cells": [
+            "Phím Nickel (Sintoms)",
+            "1.800.000"
+          ]
+        },
+        {
+          "cells": [
+            "Phím Stainless (Schaller)",
+            "2.500.000"
+          ]
+        },
+        {
+          "cells": [
+            "Phụ thu cần đàn Maple (Maple neck)",
+            "+200.000"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "repaint",
+      "photo": "/src/assets/photos/09629.jpg",
+      "name": "Repaint",
+      "short": "Sơn lại đàn với finish satin, matte hoặc glossy, có hiệu ứng sparkle.",
+      "desc": "Sơn lại đàn với finish satin, matte hoặc glossy. Giá tùy finish và việc sơn phủ mới hay phải xả lớp sơn cũ. Hiệu ứng sparkle báo giá riêng.",
+      "price": "800.000 đ",
+      "rows": [
+        {
+          "cells": [
+            "Finish: Satin / Matte / Glossy",
+            "800.000 – 3.000.000"
+          ]
+        },
+        {
+          "cells": [
+            "Hiệu ứng: Sparkle",
+            "Liên hệ"
+          ]
+        }
+      ],
+      "notes": [
+        "Giá tùy finish, sơn phủ mới hoặc xả sơn cũ.",
+        "Sparkle chỉ dành cho glossy finish."
+      ],
+      "callout": {
+        "label": "Giải thích",
+        "title": "Vì sao nhũ chỉ đi với Glossy?",
+        "text": "Hạt nhũ cần được “ủ” dưới nhiều lớp bóng, chà nhám và đánh bóng từng lớp thì mới phẳng mịn và lấp lánh có chiều sâu. Lớp Matte hay Satin mỏng và mờ, nhũ sẽ bị xỉn và sần tay, nên Torigo chỉ nhận làm nhũ cùng gói Glossy để cây đàn của bạn đẹp trọn vẹn nhất nhé!"
+      }
+    }
+  ]
+}

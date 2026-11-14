@@ -1,0 +1,28 @@
+{
+  "name": "Torigo",
+  "tagline": "Sửa chữa, setup và bảo dưỡng đàn guitar.",
+  "description": "Torigo: thay dây, setup, vệ sinh, thay nut, điện, refret và repaint đàn guitar tại TP. HCM.",
+  "phone": "0938 616 817",
+  "zalo": "https://zalo.me/0938616817",
+  "address": "127/137A Điện Biên Phủ, phường Tân Định, TP. HCM",
+  "mapUrl": "https://www.google.com/maps/search/?api=1&query=127%2F137A+%C4%90i%E1%BB%87n+Bi%C3%AAn+Ph%E1%BB%A7%2C+T%C3%A2n+%C4%90%E1%BB%8Bnh%2C+TP.+HCM",
+  "hours": [
+    {
+      "days": "Thứ 2 – Thứ 6",
+      "time": "9:00 – 19:00"
+    },
+    {
+      "days": "Thứ 7",
+      "time": "9:00 – 17:00"
+    },
+    {
+      "days": "Chủ nhật",
+      "time": "Nghỉ"
+    }
+  ],
+  "announcement": {
+    "text": "Mua dây Olympia Artisan hoặc Elixir tại shop, thay dây miễn phí",
+    "link": "/dich-vu/#setup"
+  },
+  "heroPhoto": "/src/assets/photos/09643.jpg"
+}

@@ -1,0 +1,57 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Tile from '../../components/Tile.astro';
+import Pricing from '../../components/Pricing.astro';
+import { site } from '../../data/site';
+import { services } from '../../data/services';
+import { gallery } from '../../data/gallery';
+
+export function getStaticPaths() {
+  return services.map((s) => ({ params: { slug: s.slug }, props: { s } }));
+}
+const { s } = Astro.props;
+const samples = gallery.filter((g) => g.service === s.slug).slice(0, 3);
+---
+
+<Layout title={s.name} description={s.short}>
+  <article class="mx-auto max-w-7xl px-5 md:px-8 pt-12 md:pt-20">
+    <a href="/dich-vu/" class="text-sm text-mute hover:text-char">← Bảng giá dịch vụ</a>
+    <h1 class="mt-4 text-5xl md:text-6xl">{s.name}</h1>
+
+    <div class="mt-10 grid items-start gap-10 md:grid-cols-[1fr_320px]">
+      <div>
+        <p class="text-lg leading-relaxed text-mute">{s.desc}</p>
+        <h2 class="mb-4 mt-10 text-3xl">Bảng giá</h2>
+        <Pricing s={s} />
+      </div>
+
+      <aside class="rounded-sm border border-line bg-panel p-6">
+        <p class="text-sm text-mute">Giá từ</p>
+        <p class="font-display text-5xl text-gold-deep">{s.price}</p>
+        <div class="mt-6 flex flex-col gap-3">
+          <button class="btn justify-center" data-ask={`Mình muốn hỏi về dịch vụ ${s.name}: `}>Hỏi về dịch vụ này</button>
+          <a href={site.zalo} target="_blank" rel="noopener" class="btn btn-ghost justify-center">Chat Zalo với thợ</a>
+        </div>
+        <p class="mt-4 text-xs text-mute">Gọi hoặc nhắn Zalo {site.phone} để đặt lịch.</p>
+      </aside>
+    </div>
+
+    {
+      samples.length > 0 && (
+        <section class="mt-16">
+          <div class="flex items-end justify-between gap-4">
+            <h2 class="text-3xl">Ca đã làm</h2>
+            <a href={`/gallery/?loc=${s.slug}`} class="text-sm text-gold-deep hover:underline">Xem thêm →</a>
+          </div>
+          <div class="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
+            {samples.map((item, i) => (
+              <a href={`/gallery/?loc=${s.slug}`} class="group block">
+                <Tile item={{ ...item, ratio: '4/3' }} i={i} />
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </article>
+</Layout>

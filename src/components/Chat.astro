@@ -1,0 +1,176 @@
+---
+import { site } from '../data/site';
+const tel = `tel:${site.phone.replaceAll(' ', '')}`;
+---
+
+<div class="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3">
+  <!-- Bên 1: liên hệ trực tiếp -->
+  <section
+    id="panel-contact"
+    hidden
+    aria-label="Liên hệ trực tiếp"
+    class="w-[min(92vw,360px)] rounded-sm border border-line bg-panel p-5 shadow-xl"
+  >
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-xl">Liên hệ trực tiếp</p>
+        <p class="mt-1 text-sm text-mute">Nhắn hoặc gọi thẳng cho thợ của {site.name}.</p>
+      </div>
+      <button data-close aria-label="Đóng" class="-mr-2 -mt-2 grid size-11 shrink-0 cursor-pointer place-items-center text-mute hover:text-char">
+        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+    <div class="mt-4 flex flex-col gap-2">
+      <a href={site.zalo} target="_blank" rel="noopener" class="btn justify-center">Chat Zalo với thợ</a>
+      <a href={tel} class="btn btn-ghost justify-center">Gọi {site.phone}</a>
+    </div>
+    <p class="mt-4 text-sm text-mute">{site.address}</p>
+  </section>
+
+  <!-- Bên 2: Torigo agent -->
+  <section
+    id="chat"
+    hidden
+    aria-label="Chat với Torigo agent"
+    class="flex h-[min(70vh,520px)] w-[min(92vw,360px)] flex-col overflow-hidden rounded-sm border border-line bg-panel shadow-xl"
+  >
+    <header class="flex items-center justify-between border-b border-line py-2 pl-4 pr-1">
+      <div>
+        <p class="text-xl">Torigo agent</p>
+        <p class="text-xs text-mute">Trợ lý AI tự động của {site.name}, không phải thợ.</p>
+      </div>
+      <button data-close aria-label="Đóng chat" class="grid size-11 shrink-0 cursor-pointer place-items-center text-mute hover:text-char">
+        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </header>
+    <div id="chat-log" aria-live="polite" class="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+      <p class="max-w-[85%] rounded-sm bg-cream px-3 py-2">
+        Chào bạn. Bạn cần hỏi về dịch vụ hay khoảng giá nào?
+      </p>
+    </div>
+    <form id="chat-form" class="flex border-t border-line">
+      <!-- text-base (16px): nhỏ hơn thì iPhone tự phóng to trang khi bấm vào ô nhập -->
+      <input
+        id="chat-input"
+        required
+        maxlength="500"
+        autocomplete="off"
+        placeholder="Nhập câu hỏi…"
+        aria-label="Câu hỏi của bạn"
+        class="min-w-0 flex-1 bg-transparent px-4 py-3 text-base placeholder:text-mute"
+      />
+      <button id="chat-send" class="min-w-14 cursor-pointer px-4 font-medium text-gold-deep disabled:cursor-default disabled:opacity-40">Gửi</button>
+    </form>
+  </section>
+
+  <!-- Công tắc hai bên -->
+  <div id="switch" role="group" aria-label="Kênh hỗ trợ" class="relative grid grid-cols-2 rounded-full border border-line bg-panel p-1 text-sm shadow-lg">
+    <span
+      id="switch-thumb"
+      data-side="agent"
+      class="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-gold transition-transform duration-200 ease-out data-[side=agent]:translate-x-full motion-reduce:transition-none"
+    ></span>
+    <button data-side="contact" aria-pressed="false" aria-expanded="false" aria-controls="panel-contact" class="relative min-h-11 cursor-pointer whitespace-nowrap px-4 transition-colors aria-pressed:text-ink">
+      Liên hệ trực tiếp
+    </button>
+    <button data-side="agent" aria-pressed="true" aria-expanded="false" aria-controls="chat" class="relative min-h-11 cursor-pointer whitespace-nowrap px-4 transition-colors aria-pressed:text-ink">
+      Torigo agent
+    </button>
+  </div>
+</div>
+
+<script define:vars={{ zalo: site.zalo }} is:inline>
+  const MAX_MESSAGES = 20; // giới hạn mỗi phiên, theo kế hoạch
+  const KEEP = 12; // 6 lượt gần nhất = 12 tin
+  const $ = (id) => document.getElementById(id);
+  const panels = { contact: $('panel-contact'), agent: $('chat') };
+  const segs = [...document.querySelectorAll('#switch [data-side]')];
+  const thumb = $('switch-thumb'), log = $('chat-log'), form = $('chat-form'), input = $('chat-input'), send = $('chat-send');
+  const history = [];
+  let sent = Number(sessionStorage.getItem('chatSent') || 0);
+
+  // Chọn một bên của công tắc. Bấm lại bên đang mở thì đóng (trừ khi force).
+  function select(side, force) {
+    const open = force || panels[side].hidden;
+    thumb.dataset.side = side;
+    for (const k in panels) panels[k].hidden = !(open && k === side);
+    for (const s of segs) {
+      const on = s.dataset.side === side;
+      s.setAttribute('aria-pressed', String(on));
+      s.setAttribute('aria-expanded', String(on && open));
+    }
+    if (open && side === 'agent') input.focus();
+  }
+  function closeAll() {
+    for (const k in panels) panels[k].hidden = true;
+    for (const s of segs) s.setAttribute('aria-expanded', 'false');
+  }
+  function bubble(text, mine) {
+    const p = document.createElement('p');
+    p.className = 'max-w-[85%] rounded-sm px-3 py-2 whitespace-pre-wrap ' + (mine ? 'ml-auto bg-gold text-ink' : 'bg-cream');
+    p.textContent = text;
+    log.append(p);
+    log.scrollTop = log.scrollHeight;
+    return p;
+  }
+  function toZalo(p, text) {
+    p.textContent = text + ' ';
+    const a = document.createElement('a');
+    a.href = zalo;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.className = 'font-medium text-gold-deep underline';
+    a.textContent = 'Chat Zalo với thợ';
+    p.append(a);
+  }
+
+  for (const s of segs) s.addEventListener('click', () => select(s.dataset.side));
+  addEventListener('keydown', (e) => e.key === 'Escape' && closeAll());
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-close]')) return closeAll();
+    // Nút "Hỏi về dịch vụ này" ở bất kỳ đâu: <button data-ask="...">
+    const b = e.target.closest('[data-ask]');
+    if (b) {
+      select('agent', true);
+      input.value = b.dataset.ask;
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text || send.disabled) return;
+    input.value = '';
+    bubble(text, true);
+    if (sent >= MAX_MESSAGES) return toZalo(bubble(''), 'Bạn đã hết lượt hỏi Torigo agent trong phiên này.');
+    sessionStorage.setItem('chatSent', String(++sent));
+    history.push({ role: 'user', content: text });
+    const p = bubble('Đang trả lời…'); // trạng thái chờ
+    send.disabled = true;
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history.slice(-KEEP) }),
+        signal: AbortSignal.timeout(25000),
+      });
+      if (!res.ok || !res.body) throw new Error(String(res.status));
+      // /api/chat trả về text thuần dạng streaming
+      const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      let answer = '';
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        p.textContent = answer += value;
+        log.scrollTop = log.scrollHeight;
+      }
+      if (!answer) throw new Error('empty');
+      history.push({ role: 'assistant', content: answer });
+    } catch {
+      history.pop();
+      toZalo(p, 'Torigo agent đang bận, nhắn Zalo giúp shop nhé.');
+    } finally {
+      send.disabled = false;
+    }
+  });
+</script>

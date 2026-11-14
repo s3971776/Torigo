@@ -1,0 +1,74 @@
+{
+  "items": [
+    {
+      "photo": "/src/assets/photos/09597.jpg",
+      "title": "Stratocaster HSS đỏ rượu",
+      "service": "setup"
+    },
+    {
+      "photo": "/src/assets/photos/09615.jpg",
+      "title": "Jaguar, cận cảnh pickup",
+      "service": "dien"
+    },
+    {
+      "photo": "/src/assets/photos/09602.jpg",
+      "title": "Mặt sau headstock, bộ khóa",
+      "service": "nut"
+    },
+    {
+      "photo": "/src/assets/photos/09606.jpg",
+      "title": "Mặt lưng Stratocaster",
+      "service": "repaint"
+    },
+    {
+      "photo": "/src/assets/photos/09637.jpg",
+      "title": "Stratocaster bên sofa",
+      "service": "ve-sinh"
+    },
+    {
+      "photo": "/src/assets/photos/09662.jpg",
+      "title": "Headstock và mặt phím Jaguar",
+      "service": "refret"
+    },
+    {
+      "photo": "/src/assets/photos/09599.jpg",
+      "title": "Stratocaster HSS, góc nghiêng",
+      "service": "setup"
+    },
+    {
+      "photo": "/src/assets/photos/09633.jpg",
+      "title": "Cụm công tắc Jaguar",
+      "service": "dien"
+    },
+    {
+      "photo": "/src/assets/photos/09668.jpg",
+      "title": "Jaguar đỏ trong case",
+      "service": "repaint"
+    },
+    {
+      "photo": "/src/assets/photos/09634.jpg",
+      "title": "Headstock Jaguar đỏ",
+      "service": "nut"
+    },
+    {
+      "photo": "/src/assets/photos/09640.jpg",
+      "title": "Pickguard pearl và ngựa đàn",
+      "service": "ve-sinh"
+    },
+    {
+      "photo": "/src/assets/photos/09663.jpg",
+      "title": "Jaguar, pickguard và cần đàn",
+      "service": "refret"
+    },
+    {
+      "photo": "/src/assets/photos/09652.jpg",
+      "title": "Stratocaster trong case",
+      "service": "setup"
+    },
+    {
+      "photo": "/src/assets/photos/09660.jpg",
+      "title": "Jaguar đỏ, toàn thân",
+      "service": "repaint"
+    }
+  ]
+}

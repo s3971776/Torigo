@@ -1,0 +1,330 @@
+---
+// Trang quản trị: đăng nhập bằng Supabase Auth, CRUD thẳng vào Postgres (quyền ghi do RLS kiểm soát,
+// xem supabase/schema.sql). Trang này chỉ là giao diện; không có khóa bí mật nào nằm ở đây.
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Quản trị | Torigo</title>
+    <script is:inline>
+      (() => {
+        let t;
+        try { t = localStorage.getItem('theme'); } catch {}
+        document.documentElement.dataset.theme = t || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      })();
+    </script>
+  </head>
+  <body class="bg-cream font-sans font-light text-char antialiased">
+    <div id="app" class="mx-auto max-w-5xl px-5 py-8"></div>
+  </body>
+</html>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  type Field = { name: string; label: string; type?: string; req?: boolean; hint?: string };
+  type Table = { label: string; single?: boolean; order?: string; desc?: boolean; title?: (r: any) => string; defaults?: () => any; fields: Field[] };
+
+  const TABLE_HINT = 'Mỗi dòng một hàng, các ô cách nhau bằng dấu |';
+  const tables: Record<string, Table> = {
+    site_settings: {
+      label: 'Thông tin shop',
+      single: true,
+      fields: [
+        { name: 'data.name', label: 'Tên shop', req: true },
+        { name: 'data.tagline', label: 'Câu giới thiệu ngắn' },
+        { name: 'data.description', label: 'Mô tả cho Google', type: 'textarea' },
+        { name: 'data.phone', label: 'Số điện thoại' },
+        { name: 'data.zalo', label: 'Link Zalo' },
+        { name: 'data.address', label: 'Địa chỉ' },
+        { name: 'data.mapUrl', label: 'Link Google Maps' },
+        { name: 'data.hours', label: 'Giờ mở cửa', type: 'table', hint: 'Mỗi dòng: ngày | giờ. Ví dụ: Thứ 7 | 9:00 – 17:00' },
+        { name: 'data.announcement.text', label: 'Dải thông báo: nội dung' },
+        { name: 'data.announcement.link', label: 'Dải thông báo: link khi bấm' },
+        { name: 'data.heroPhoto', label: 'Ảnh hero trang chủ', type: 'image' },
+      ],
+    },
+    services: {
+      label: 'Dịch vụ & bảng giá',
+      order: 'sort',
+      title: (r) => `${r.name} (từ ${r.price})`,
+      fields: [
+        { name: 'name', label: 'Tên', req: true },
+        { name: 'slug', label: 'Slug', req: true, hint: 'Dùng trong địa chỉ trang: chữ thường không dấu, số, gạch ngang. Để trống sẽ tự tạo từ tên.' },
+        { name: 'sort', label: 'Thứ tự', type: 'number' },
+        { name: 'photo', label: 'Ảnh đại diện', type: 'image' },
+        { name: 'short', label: 'Mô tả ngắn' },
+        { name: 'description', label: 'Mô tả đầy đủ', type: 'textarea' },
+        { name: 'price', label: 'Giá thấp nhất (hiện dạng “Từ …”)' },
+        { name: 'cols', label: 'Tiêu đề cột', type: 'lines', hint: 'Mỗi dòng một cột. Bỏ trống nếu chỉ có 1 cột giá.' },
+        { name: 'rows', label: 'Bảng giá', type: 'table', hint: `${TABLE_HINT}. Ô đầu là tên hạng mục. Ví dụ: Cơ bản | 100.000` },
+        { name: 'notes', label: 'Ghi chú dưới bảng giá', type: 'lines', hint: 'Mỗi dòng một ghi chú.' },
+        { name: 'callout.label', label: 'Khối nổi bật: nhãn nhỏ' },
+        { name: 'callout.title', label: 'Khối nổi bật: tiêu đề' },
+        { name: 'callout.text', label: 'Khối nổi bật: nội dung', type: 'textarea' },
+        { name: 'callout.rows', label: 'Khối nổi bật: bảng', type: 'table', hint: TABLE_HINT },
+      ],
+    },
+    gallery: {
+      label: 'Gallery',
+      order: 'sort',
+      title: (r) => r.title || r.photo,
+      fields: [
+        { name: 'photo', label: 'Ảnh', type: 'image', req: true },
+        { name: 'title', label: 'Tiêu đề' },
+        { name: 'service', label: 'Dịch vụ', type: 'service' },
+        { name: 'sort', label: 'Thứ tự', type: 'number' },
+      ],
+    },
+    posts: {
+      label: 'Blog',
+      order: 'date',
+      desc: true,
+      title: (r) => `${r.title}${r.published ? '' : ' (nháp)'}`,
+      defaults: () => ({ published: true, date: new Date().toISOString().slice(0, 10) }),
+      fields: [
+        { name: 'title', label: 'Tiêu đề', req: true },
+        { name: 'slug', label: 'Slug', hint: 'Để trống sẽ tự tạo từ tiêu đề.' },
+        { name: 'date', label: 'Ngày đăng', type: 'date', req: true },
+        { name: 'service', label: 'Dịch vụ liên quan (nút cuối bài)', type: 'service' },
+        { name: 'cover', label: 'Ảnh bìa', type: 'image' },
+        { name: 'description', label: 'Mô tả ngắn', type: 'textarea' },
+        { name: 'body', label: 'Nội dung (Markdown)', type: 'markdown' },
+        { name: 'published', label: 'Đã đăng', type: 'checkbox' },
+      ],
+    },
+  };
+
+  // ---- tiện ích ----
+  const app = document.getElementById('app')!;
+  const INPUT = 'w-full rounded-sm border border-line bg-cream px-3 py-2.5 text-base';
+  function h(tag: string, attrs: Record<string, any> = {}, ...kids: (Node | string | null | false | undefined)[]) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else if (v === true) el.setAttribute(k, '');
+      else if (v !== false && v != null) el.setAttribute(k, String(v));
+    }
+    for (const kid of kids) if (kid) el.append(kid); // append() chèn chuỗi dạng text, không phải HTML
+    return el;
+  }
+  const get = (o: any, path: string) => path.split('.').reduce((v, k) => v?.[k], o);
+  function set(o: any, path: string, value: any) {
+    const keys = path.split('.');
+    const last = keys.pop()!;
+    keys.reduce((v, k) => (v[k] ??= {}), o)[last] = value;
+  }
+  const slugify = (s: string) =>
+    s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const lines = (s: string) => s.split('\n').map((l) => l.trim()).filter(Boolean);
+  const empty = (v: any) => v == null || v === '' || (Array.isArray(v) && !v.length);
+
+  const url = import.meta.env.PUBLIC_SUPABASE_URL;
+  const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    app.append(
+      h('h1', { class: 'text-3xl' }, 'Chưa kết nối Supabase'),
+      h('p', { class: 'mt-4 text-mute' }, 'Chép .env.example thành .env, điền PUBLIC_SUPABASE_URL và PUBLIC_SUPABASE_ANON_KEY, rồi khởi động lại server.'),
+    );
+  } else {
+    const sb = createClient(url, key);
+    let services: { slug: string; name: string }[] = [];
+    let current = 'site_settings';
+    const status = h('p', { role: 'alert', class: 'min-h-6 text-sm' });
+    const say = (msg: string, bad = false) => {
+      status.textContent = msg;
+      status.className = `min-h-6 text-sm ${bad ? 'text-red-700 dark:text-red-400' : 'text-gold-deep'}`;
+    };
+
+    // ---- đăng nhập ----
+    function renderLogin() {
+      const email = h('input', { type: 'email', required: true, autocomplete: 'username', class: INPUT, id: 'email' }) as HTMLInputElement;
+      const pass = h('input', { type: 'password', required: true, autocomplete: 'current-password', class: INPUT, id: 'pass' }) as HTMLInputElement;
+      const form = h(
+        'form',
+        {
+          class: 'mx-auto mt-16 max-w-sm space-y-4',
+          onsubmit: async (e: Event) => {
+            e.preventDefault();
+            say('Đang đăng nhập…');
+            const { error } = await sb.auth.signInWithPassword({ email: email.value, password: pass.value });
+            if (error) say(`Đăng nhập lỗi: ${error.message}`, true);
+          },
+        },
+        h('h1', { class: 'text-3xl' }, 'Quản trị Torigo'),
+        h('label', { for: 'email', class: 'block text-sm' }, 'Email'),
+        email,
+        h('label', { for: 'pass', class: 'block text-sm' }, 'Mật khẩu'),
+        pass,
+        h('button', { class: 'btn w-full justify-center' }, 'Đăng nhập'),
+        status,
+      );
+      app.replaceChildren(form);
+    }
+
+    // ---- khung chính ----
+    const view = h('div', { class: 'mt-8' });
+    function renderShell() {
+      const tabs = h('nav', { class: 'mt-6 flex flex-wrap gap-2 text-sm', 'aria-label': 'Bảng dữ liệu' });
+      for (const [name, t] of Object.entries(tables)) {
+        tabs.append(
+          h('button', {
+            class: `min-h-11 cursor-pointer rounded-sm px-4 ${name === current ? 'bg-gold text-ink' : 'shadow-[inset_0_0_0_1px_var(--color-line)]'}`,
+            onclick: () => { current = name; renderShell(); },
+          }, t.label),
+        );
+      }
+      app.replaceChildren(
+        h('div', { class: 'flex flex-wrap items-center justify-between gap-4' },
+          h('h1', { class: 'text-3xl' }, 'Quản trị Torigo'),
+          h('div', { class: 'flex items-center gap-5 text-sm' },
+            h('a', { href: '/', class: 'link' }, 'Xem web'),
+            h('button', { class: 'link cursor-pointer', onclick: () => sb.auth.signOut() }, 'Đăng xuất'),
+          ),
+        ),
+        h('p', { class: 'mt-2 text-sm text-mute' }, 'Dữ liệu lưu thẳng vào Supabase. Web công khai cập nhật sau lần build tiếp theo.'),
+        tabs,
+        status,
+        view,
+      );
+      say('');
+      tables[current].single ? openForm() : renderList();
+    }
+
+    // ---- danh sách ----
+    async function renderList() {
+      const t = tables[current];
+      view.replaceChildren(h('p', { class: 'text-mute' }, 'Đang tải…'));
+      const { data, error } = await sb.from(current).select('*').order(t.order!, { ascending: !t.desc });
+      if (error) return say(`Tải dữ liệu lỗi: ${error.message}`, true);
+      const list = h('ul', { class: 'mt-4 border-t border-line' });
+      for (const row of data) {
+        list.append(
+          h('li', { class: 'flex items-center justify-between gap-4 border-b border-line py-2' },
+            h('span', { class: 'min-w-0 truncate' }, t.title!(row)),
+            h('span', { class: 'flex shrink-0 gap-2 text-sm' },
+              h('button', { class: 'min-h-11 cursor-pointer px-3 text-gold-deep', onclick: () => openForm(row) }, 'Sửa'),
+              h('button', {
+                class: 'min-h-11 cursor-pointer px-3 text-red-700 dark:text-red-400',
+                onclick: async () => {
+                  if (!confirm(`Xóa “${t.title!(row)}”? Không hoàn tác được.`)) return;
+                  const { error } = await sb.from(current).delete().eq('id', row.id);
+                  error ? say(`Xóa lỗi: ${error.message}`, true) : (say('Đã xóa.'), renderList());
+                },
+              }, 'Xóa'),
+            ),
+          ),
+        );
+      }
+      view.replaceChildren(
+        h('button', { class: 'btn', onclick: () => openForm() }, `Thêm vào ${t.label}`),
+        data.length ? list : h('p', { class: 'mt-6 text-mute' }, 'Chưa có dòng nào.'),
+      );
+    }
+
+    // ---- form thêm / sửa ----
+    async function openForm(row?: any) {
+      const t = tables[current];
+      if (t.single) {
+        const { data, error } = await sb.from(current).select('*').eq('id', 1).maybeSingle();
+        if (error) return say(`Tải dữ liệu lỗi: ${error.message}`, true);
+        row = data ?? { id: 1, data: {} };
+      }
+      const isNew = !row;
+      row = structuredClone(row ?? t.defaults?.() ?? {});
+      if (!services.length) services = (await sb.from('services').select('slug,name').order('sort')).data ?? [];
+
+      const inputs = new Map<Field, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>();
+      const form = h('form', { class: 'space-y-5' });
+      for (const f of t.fields) {
+        const id = `f-${f.name}`;
+        const v = get(row, f.name);
+        let input: any;
+        if (f.type === 'textarea' || f.type === 'markdown' || f.type === 'lines' || f.type === 'table') {
+          const text = f.type === 'lines' ? (v ?? []).join('\n') : f.type === 'table' ? (v ?? []).map((r: string[]) => r.join(' | ')).join('\n') : (v ?? '');
+          input = h('textarea', { id, rows: f.type === 'markdown' ? 18 : f.type === 'textarea' ? 3 : 4, class: `${INPUT} ${f.type === 'markdown' ? 'font-mono text-sm' : ''}`, required: f.req });
+          input.value = text;
+        } else if (f.type === 'service') {
+          input = h('select', { id, class: INPUT }, h('option', { value: '' }, '(không gắn)'), ...services.map((s) => h('option', { value: s.slug }, s.name)));
+          input.value = v ?? '';
+        } else if (f.type === 'checkbox') {
+          input = h('input', { id, type: 'checkbox', class: 'size-5' });
+          input.checked = Boolean(v);
+        } else {
+          input = h('input', { id, type: f.type === 'number' || f.type === 'date' ? f.type : 'text', class: INPUT, required: f.req && f.name !== 'slug' });
+          input.value = v ?? '';
+        }
+        inputs.set(f, input);
+        const wrap = h('div', {}, h('label', { for: id, class: 'mb-1 block text-sm' }, f.label), input);
+        if (f.type === 'image') wrap.append(imagePicker(input));
+        if (f.hint) wrap.append(h('p', { class: 'mt-1 text-xs text-mute' }, f.hint));
+        form.append(wrap);
+      }
+      form.append(
+        h('div', { class: 'flex flex-wrap gap-3 pt-2' },
+          h('button', { class: 'btn' }, 'Lưu'),
+          !t.single && h('button', { type: 'button', class: 'btn btn-ghost', onclick: renderList }, 'Quay lại'),
+        ),
+      );
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const out: any = t.single ? { id: 1, data: row.data ?? {} } : {};
+        for (const [f, input] of inputs) {
+          const s = input.value;
+          const value =
+            f.type === 'checkbox' ? (input as HTMLInputElement).checked
+            : f.type === 'number' ? Number(s) || 0
+            : f.type === 'lines' ? lines(s)
+            : f.type === 'table' ? lines(s).map((l) => l.split('|').map((c) => c.trim()))
+            : f.type === 'service' ? s || null
+            : s.trim();
+          set(out, f.name, value);
+        }
+        // dọn các giá trị rỗng về null để web không vẽ khối trống
+        for (const k of ['cols', 'notes']) if (k in out && empty(out[k])) out[k] = null;
+        if (out.callout && Object.values(out.callout).every(empty)) out.callout = null;
+        if ('slug' in out && !out.slug) out.slug = slugify(out.name ?? out.title ?? '');
+
+        say('Đang lưu…');
+        const q = t.single ? sb.from(current).upsert(out) : isNew ? sb.from(current).insert(out) : sb.from(current).update(out).eq('id', row.id);
+        const { error } = await q;
+        if (error) return say(`Lưu lỗi: ${error.message}`, true);
+        say('Đã lưu.');
+        if (current === 'services') services = [];
+        if (!t.single) renderList();
+      });
+      view.replaceChildren(h('h2', { class: 'mb-5 text-2xl' }, t.single ? t.label : isNew ? 'Thêm mới' : 'Sửa'), form);
+    }
+
+    // Ô ảnh: giữ đường dẫn trong ô text, kèm nút tải ảnh lên kho "photos" và ảnh xem trước
+    function imagePicker(input: HTMLInputElement) {
+      const preview = h('img', { alt: '', class: 'mt-2 max-h-40 rounded-sm' }) as HTMLImageElement;
+      const show = () => { preview.hidden = !input.value; preview.src = input.value; };
+      preview.onerror = () => (preview.hidden = true);
+      input.addEventListener('input', show);
+      show();
+      const file = h('input', { type: 'file', accept: 'image/*', class: 'mt-2 block text-sm', 'aria-label': 'Tải ảnh lên' }) as HTMLInputElement;
+      file.addEventListener('change', async () => {
+        const f = file.files?.[0];
+        if (!f) return;
+        say('Đang tải ảnh lên…');
+        const ext = f.name.split('.').pop()!.toLowerCase();
+        const path = `${Date.now()}-${slugify(f.name.replace(/\.\w+$/, '')) || 'anh'}.${ext}`;
+        const { error } = await sb.storage.from('photos').upload(path, f);
+        if (error) return say(`Tải ảnh lỗi: ${error.message}`, true);
+        input.value = sb.storage.from('photos').getPublicUrl(path).data.publicUrl;
+        show();
+        say('Đã tải ảnh lên. Nhớ bấm Lưu.');
+      });
+      return h('div', {}, file, preview);
+    }
+
+    sb.auth.onAuthStateChange((_event, session) => (session ? renderShell() : renderLogin()));
+  }
+</script>

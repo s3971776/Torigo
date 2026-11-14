@@ -1,0 +1,26 @@
+---
+// Ô ảnh. item: { photo, title?, ratio? }. Không có ratio thì giữ tỉ lệ gốc của ảnh.
+// caption={false}: ẩn tiêu đề trong ảnh, dùng khi chú thích nằm bên dưới.
+import { Image } from 'astro:assets';
+import { photo } from '../data/photos';
+
+const { item, caption = true, sizes = '(min-width: 1024px) 25vw, 50vw' } = Astro.props;
+const img = await photo(item.photo);
+---
+
+<div class="relative overflow-hidden rounded-sm bg-panel" style={`aspect-ratio:${item.ratio ?? `${img.width}/${img.height}`}`}>
+  <Image
+    {...img.props}
+    alt={item.title ?? ''}
+    widths={[400, 800, 1200]}
+    sizes={sizes}
+    class="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+  />
+  {
+    caption && item.title && (
+      <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 pt-10 text-left text-sm text-ivory">
+        {item.title}
+      </span>
+    )
+  }
+</div>

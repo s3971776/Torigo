@@ -1,0 +1,58 @@
+---
+// Bảng giá của một dịch vụ, dùng ở trang Dịch vụ và trang chi tiết.
+const { s } = Astro.props;
+---
+
+<table class="w-full text-sm">
+  {
+    s.cols && (
+      <thead>
+        <tr class="text-xs uppercase tracking-wider text-mute">
+          {s.cols.map((c, i) => (
+            <th scope="col" class:list={['pb-2 font-normal', i === 0 ? 'text-left' : 'pl-4 text-right']}>
+              {c}
+            </th>
+          ))}
+        </tr>
+      </thead>
+    )
+  }
+  <tbody>
+    {
+      s.rows.map((r) => (
+        <tr class="border-t border-line">
+          {r.map((c, i) =>
+            i === 0 ? (
+              <th scope="row" class="py-3 text-left font-light">{c}</th>
+            ) : (
+              <td class:list={['py-3 pl-4 text-right font-medium whitespace-nowrap', c === 'Liên hệ' && 'text-gold-deep']}>
+                {c}
+              </td>
+            ),
+          )}
+        </tr>
+      ))
+    }
+  </tbody>
+</table>
+{s.notes?.map((n) => <p class="mt-2 text-xs text-mute">* {n}</p>)}
+
+{
+  s.callout && (
+    <div class="mt-5 rounded-sm bg-cream p-5">
+      <p class="text-xs uppercase tracking-widest text-gold-deep">{s.callout.label}</p>
+      <p class="mt-2 text-xl">{s.callout.title}</p>
+      <p class="mt-2 text-sm text-mute">{s.callout.text}</p>
+      {s.callout.rows && (
+        <dl class="mt-3 text-sm">
+          {s.callout.rows.map(([k, v]) => (
+            <div class="flex justify-between gap-4 border-t border-line py-2">
+              <dt>{k}</dt>
+              <dd class="font-medium whitespace-nowrap text-gold-deep">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  )
+}
