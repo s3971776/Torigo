@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { serviceBySlug } from '../../data/services';
 import Tile from '../../components/Tile.astro';
+import { site } from '../../data/site';
 
 export async function getStaticPaths() {
   return (await getCollection('blog')).map((post) => ({ params: { slug: post.id }, props: { post } }));
@@ -31,7 +32,7 @@ const s = serviceBySlug[post.data.service];
           <p class="mt-2 text-mute">{s.short}</p>
           <div class="mt-6 flex flex-wrap gap-3">
             <a href={`/dich-vu/${s.slug}/`} class="btn">Xem dịch vụ →</a>
-            <button class="btn btn-ghost" data-ask={`Mình muốn hỏi về dịch vụ ${s.name}: `}>Hỏi về dịch vụ này</button>
+            <a href={site.zalo} target="_blank" rel="noopener" class="btn btn-ghost">Chat Zalo với thợ</a>
           </div>
         </aside>
       )

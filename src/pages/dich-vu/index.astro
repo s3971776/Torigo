@@ -32,7 +32,7 @@ import { services } from '../../data/services';
             <p class="mb-6 mt-2 text-sm text-mute">{s.short}</p>
             <Pricing s={s} />
             <div class="mt-6 flex flex-wrap gap-3">
-              <button class="btn" data-ask={`Mình muốn hỏi về dịch vụ ${s.name}: `}>Hỏi về dịch vụ này</button>
+              <a href={site.zalo} target="_blank" rel="noopener" class="btn">Chat Zalo với thợ</a>
               <a href={`/dich-vu/${s.slug}/`} class="btn btn-ghost">Chi tiết</a>
             </div>
           </article>

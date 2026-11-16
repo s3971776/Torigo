@@ -84,10 +84,9 @@ const jsonLd = {
     <main id="noi-dung"><slot /></main>
 
     <footer class="mt-24 bg-panel">
-      <div class="mx-auto grid max-w-7xl gap-10 px-5 py-16 text-sm sm:grid-cols-2 md:px-8 lg:grid-cols-4">
+      <div class="mx-auto grid max-w-7xl gap-10 px-5 py-16 text-sm sm:grid-cols-2 md:px-8 lg:grid-cols-3">
         <div>
           <p class="font-display text-2xl tracking-[0.2em] uppercase">{site.name}</p>
-          <p class="mt-4 max-w-xs text-mute">{site.tagline}</p>
         </div>
         <div>
           <p class="eyebrow">Dịch vụ</p>
@@ -96,16 +95,8 @@ const jsonLd = {
           </ul>
         </div>
         <div>
-          <p class="eyebrow">Khám phá</p>
-          <ul class="mt-2">
-            {nav.map(([href, label]) => <li><a href={href} class="block py-2 hover:text-gold-deep">{label}</a></li>)}
-          </ul>
-        </div>
-        <div>
           <p class="eyebrow">Liên hệ</p>
           <div class="mt-4 space-y-2">
-            <p>{site.address}</p>
-            <p><a href={tel} class="hover:text-gold-deep">{site.phone}</a></p>
             <div class="pt-2 text-mute">{site.hours.map(([d, h]) => <p>{d}: {h}</p>)}</div>
           </div>
         </div>

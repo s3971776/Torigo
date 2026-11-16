@@ -14,7 +14,6 @@ const featurePhotos: Record<string, string> = { refret: '09657', repaint: '09616
 const features = Object.keys(featurePhotos)
   .filter((slug) => serviceBySlug[slug])
   .map((slug) => ({ ...serviceBySlug[slug], photo: featurePhotos[slug] }));
-const promo = serviceBySlug.setup?.callout;
 const hero = await photo(site.heroPhoto);
 ---
 
@@ -34,12 +33,11 @@ const hero = await photo(site.heroPhoto);
     <div class="absolute inset-0 -z-10 bg-gradient-to-tr from-black/75 via-black/25 to-transparent"></div>
 
     <div class="mx-auto w-full max-w-7xl px-5 pb-12 text-ivory md:px-8 md:pb-16">
-      <p class="eyebrow !text-gold">Sửa chữa · Setup · Bảo dưỡng</p>
-      <h1 class="mt-4 max-w-2xl text-5xl md:text-7xl">Đàn rè, phô, ù? Mang đến <em class="text-gold">{site.name}</em>.</h1>
-      <p class="mt-5 max-w-md text-ivory/80">{site.tagline}</p>
+      <p class="eyebrow !text-gold">Dịch vụ guitar</p>
+      <h1 class="mt-4 max-w-3xl text-5xl leading-[1.05] md:text-7xl">Mod, tân trang<br />&amp; sửa chữa guitar</h1>
       <div class="mt-8 flex flex-wrap gap-3">
         <a href="/dich-vu/" class="btn">Xem dịch vụ</a>
-        <a href="/gallery/" class="btn btn-ghost !text-ivory !shadow-[inset_0_0_0_1px_var(--color-ivory)]">Xem ca đã làm</a>
+        <a href={site.zalo} target="_blank" rel="noopener" class="btn btn-ghost !text-ivory !shadow-[inset_0_0_0_1px_var(--color-ivory)]">Chat Zalo</a>
       </div>
     </div>
   </section>
@@ -63,14 +61,18 @@ const hero = await photo(site.heroPhoto);
     </div>
   </section>
 
-  <!-- HAI KHỐI LỚN -->
-  <section class="mx-auto grid max-w-7xl gap-5 px-5 pt-24 md:grid-cols-2 md:px-8">
+  <!-- TÂN TRANG: hai khối lớn -->
+  <section class="mx-auto max-w-7xl px-5 pt-24 md:px-8">
+    <h2 class="text-3xl md:text-4xl">Tân trang đàn cũ</h2>
+    <p class="mt-2 max-w-xl text-mute">Làm lại phím, sơn lại thân để cây đàn cũ chơi và trông như mới.</p>
+  </section>
+  <section class="mx-auto mt-8 grid max-w-7xl gap-5 px-5 md:grid-cols-2 md:px-8">
     {
       features.map((s, i) => (
         <a href={`/dich-vu/${s.slug}/`} class="reveal group block">
           <Tile item={{ ratio: '4/5', photo: s.photo, title: s.name }} caption={false} sizes="(min-width: 768px) 50vw, 100vw" />
           <p class="eyebrow mt-6">Từ {s.price}</p>
-          <h2 class="mt-2 text-3xl">{s.name}</h2>
+          <h3 class="mt-2 text-3xl">{s.name}</h3>
           <p class="mt-2 max-w-md text-sm text-mute">{s.short}</p>
           <span class="link mt-4 inline-block">Xem dịch vụ</span>
         </a>
@@ -78,28 +80,6 @@ const hero = await photo(site.heroPhoto);
     }
   </section>
 
-  <!-- ƯU ĐÃI: ảnh một bên, chữ một bên. Lấy từ khối nổi bật của dịch vụ setup; không có thì ẩn. -->
-  {promo && (
-  <section class="mx-auto grid max-w-7xl items-center gap-10 px-5 pt-24 md:grid-cols-2 md:gap-16 md:px-8">
-    <div class="reveal group"><Tile item={{ ratio: '4/3', photo: '09656', title: 'Đầu cần đàn và bộ khóa trên nền lót case' }} caption={false} sizes="(min-width: 768px) 50vw, 100vw" /></div>
-    <div class="reveal">
-      <p class="eyebrow">{promo.label}</p>
-      <h2 class="mt-3 text-3xl md:text-4xl">{promo.title}</h2>
-      <p class="mt-4 text-mute">{promo.text}</p>
-      <dl class="mt-6 max-w-md text-sm">
-        {
-          promo.rows?.map(([k, v]) => (
-            <div class="flex justify-between gap-4 border-t border-line py-3">
-              <dt>{k}</dt>
-              <dd class="font-medium whitespace-nowrap text-gold-deep">{v}</dd>
-            </div>
-          ))
-        }
-      </dl>
-      <a href="/dich-vu/#setup" class="btn mt-6">Xem giá thay dây & setup</a>
-    </div>
-  </section>
-  )}
 
   <!-- DẢI NỀN: hỏi AI hoặc Zalo -->
   <section class="mt-24 bg-panel">
@@ -107,11 +87,10 @@ const hero = await photo(site.heroPhoto);
       <p class="eyebrow">Tư vấn</p>
       <h2 class="mt-3 text-3xl md:text-5xl">Chưa chắc đàn bị gì?</h2>
       <p class="mt-4 text-mute">
-        Hỏi Torigo agent để biết nhanh dịch vụ nào phù hợp, hoặc gửi ảnh đàn qua Zalo để thợ xem trực tiếp.
+        Gửi ảnh đàn qua Zalo để thợ xem trực tiếp và báo giá.
       </p>
       <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <button class="btn" data-ask="Đàn mình đang bị ">Hỏi Torigo agent</button>
-        <a href={site.zalo} target="_blank" rel="noopener" class="btn btn-ghost">Chat Zalo với thợ</a>
+        <a href={site.zalo} target="_blank" rel="noopener" class="btn">Chat Zalo với thợ</a>
       </div>
     </div>
   </section>
